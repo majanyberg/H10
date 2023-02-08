@@ -1,0 +1,74 @@
+import { ListGraph } from './graphs'
+import{ is_null, list, List } from './list'
+import{length} from './list_prelude'
+import{lg_kosaraju} from './lecture10b'
+
+type Permutation = Array<number>;
+
+/**
+ * Generates a random permutation of numbers from 0 to `length - 1` using Durstenfeld's improved version of the Fisher-Yates shuffle
+ * 
+ * @param length the length of the permutation
+ * @returns the random permutation as an array of numbers, type Permutation
+ */
+function randomPermutation(length: number): Permutation {
+    let permutation = Array.from({length: length}, (_, i) => i);
+    for (let i = length - 1; i > 0; i--) {
+        let j = Math.floor(Math.random() * (i + 1));
+        [permutation[i], permutation[j]] = [permutation[j], permutation[i]];
+    }
+    return permutation;
+}
+
+/**
+ * Permutes the elements of an array according to a given permutation
+ * 
+ * @param xs the list to be permuted
+ * @returns the permuted list
+ */
+function lg_permute_list<T>(xs: List<T>): List<T> {
+  const permutation: Permutation = randomPermutation(list.length);
+  let new_list: List<T> = xs;
+  for (let i = 0; i = length(xs); i++){
+    if (!is_null(new_list) && !is_null(xs)){
+      new_list[permutation[i]] = xs[i];
+      
+    }
+    
+  }
+  return new_list;
+}
+
+/**
+ * Permutes the adjacency lists of a graph
+ * 
+ * @param lg the graph to be permuted
+ * @returns the permuted graph
+ */
+function reorderGraph(graph: ListGraph): ListGraph {
+  
+  const randomizedAdj = graph.adj.map(lg_permute_list);
+  return { adj: randomizedAdj, size: graph.size };
+  }
+
+
+  function random_kosaraju(lg: ListGraph): List<List<number>> {
+    const reorderedGraph = reorderGraph(lg);
+    const randomStartOrder = randomPermutation(reorderedGraph.size);
+
+    return lg_kosaraju(reorderedGraph, randomStartOrder);
+}
+
+  
+  test('it returns an array of the correct length', () => {
+    const length = 10;
+    const permutation = randomPermutation(length);
+    expect(permutation).toHaveLength(length);
+  });
+
+  test('it returns a valid permutation', () => {
+    const length = 10;
+    const permutation = randomPermutation(length);
+    expect(permutation).toHaveLength(length);
+    expect([...permutation].sort()).toEqual(Array.from({length}, (_, i) => i));
+  });
