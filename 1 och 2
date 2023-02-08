@@ -1,4 +1,4 @@
-import { ListGraph } from './graphs'
+import { lg_new, ListGraph } from './graphs'
 import{ append, is_null, list, List } from './list'
 import{length} from './list_prelude'
 import{lg_kosaraju} from './lecture10b'
@@ -27,16 +27,17 @@ function random_permutation(length: number): Permutation {
  * @returns the permuted list
  */
 function lg_permute_list<T>(xs: List<T>): List<T> {
-  const permutation: Permutation = random_permutation(list.length);
-  let new_list: List<T> = xs;
-  for (let i = 0; i <= length(xs); i++){
-    if (!is_null(new_list) && !is_null(xs)){
-      new_list[permutation[i]] = xs[i];
+
+    const permutation: Permutation = random_permutation(list.length);
+    let new_list: List<T> = xs;
+    for (let i = 0; i <= length(xs); i++){
+        if (!is_null(new_list) && !is_null(xs)){
+            new_list[permutation[i]] = xs[i];
       
-    }
+        }
     
-  }
-  return new_list;
+    }
+    return new_list;
 }
 
 /**
@@ -46,45 +47,56 @@ function lg_permute_list<T>(xs: List<T>): List<T> {
  * @returns the permuted graph
  */
 function lg_permute_nodeLists(graph: ListGraph): ListGraph {
-  
-  const randomizedAdj = graph.adj.map(lg_permute_list);
-  return { adj: randomizedAdj, size: graph.size };
-  }
+    let new_graph: ListGraph = lg_new(graph.size);
+    for (let i = 0; i < graph.size; i++) {
 
-  function random_kosaraju(lg: ListGraph): List<List<number>> {
-    const reorderedGraph = lg_permute_nodeLists(lg);
-    const randomStartOrder: Permutation = random_permutation(reorderedGraph.size);
-    const numbers: Permutation = randomStartOrder.map((num) => num);
-    let new_list: List<number> = list();
-    for (let i = 0; i <= numbers.length; i++){
-      new_list = append(new_list, list(numbers[i]));
+        const permutation: Permutation = random_permutation(graph.size);
+        if (!is_null(graph) && !is_null(new_graph)){
+            new_graph[permutation[i]] = graph[i];
+        }
     }
-    return lg_kosaraju(reorderedGraph, new_list);
+    return new_graph;
+  
+}
+
+  
+/**
+ * Permutes the adjacency lists of a graph
+ * 
+ * @param lg the graph to be permuted and restarted
+ * @returns the randomly restarted adjacency lists in a list
+ */
+function random_kosaraju(lg: ListGraph): List<List<number>> {
+    const randomStartOrder: Permutation = random_permutation(lg.size);
+    const new_graph = lg_permute_nodeLists(lg);
+    let new_list: List<number> = list();
+    
+    for (let i = 0; i <= randomStartOrder.length; i++){
+        new_list = append(new_list, list(randomStartOrder[i]));
+    }
+    return lg_kosaraju(new_graph, new_list);
     
 }
 
-
-
-  
-  test('it returns an array of the correct length', () => {
+test('it returns an array of the correct length', () => {
     const length = 10;
     const permutation = random_permutation(length);
     expect(permutation).toHaveLength(length);
-  });
+});
 
-  test('it returns a valid permutation', () => {
+test('it returns a valid permutation', () => {
     const length = 10;
     const permutation = random_permutation(length);
     expect(permutation).toHaveLength(length);
     expect([...permutation].sort()).toEqual(Array.from({length}, (_, i) => i));
-  });
+});
 
-  test('it returns the correct SCCs', () => {
+test('it returns the correct SCCs', () => {
     const lg: ListGraph = {
         adj: [list(1, 2),list(3,4), list(0,1)],
         size: 3
     };
        
-      const result = random_kosaraju(lg);
-      expect(result).toContainEqual(lg.adj);
-    });
+    const result = random_kosaraju(lg);
+    expect(result).toContainEqual(lg.adj);
+});
